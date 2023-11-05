@@ -1,55 +1,54 @@
 import React, { useState } from "react";
 import "./style/style.css";
+import axios from "axios";
 
 function Chatbot() {
   //Add states: inputValue, error, result, prompt, jresult
-  const [inputValue, setInputValue] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
   const [result, setResult] = useState("");
   const [prompt, setPrompt] = useState("");
   const [jresult, setJresult] = useState("");
   const [responseOk, setResponseOk] = useState("");
   const [error, setError] = useState("");
   const [selectedOption, setSelectedOption] = useState("");
+  const [messages, setMessages] = useState([
+    { role: "system", content: "You are an assistant" },
+  ]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!inputValue) {
-      setError("Please enter a prompt!");
-      setPrompt("");
-      setResult("");
-      setJresult("");
-      return;
-    }
+    // send a request to the server only if there is a user message
+    if (inputMessage.trim() !== "") {
+      try {
+        // Add the user message to the messages array
+        const updatedMessages = [
+          ...messages,
+          { role: "user", content: inputMessage },
+        ];
+        setMessages(updatedMessages);
+        const response = await axios.post("/api/chatbot", {
+          messages: updatedMessages,
+        });
+        const serverResponse = response.data;
 
-    try {
-      const response = await fetch("/api/chatgpt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: inputValue }),
-      });
+        // add the server respnse to the messages array
+        const updatedMessages2 = [
+          ...updatedMessages,
+          {
+            role: "assistant",
+            content: serverResponse.data.choices[0].message.content,
+          },
+        ];
+        setMessages(updatedMessages2);
+        console.log(updatedMessages2);
 
-      if (response.ok) {
-        setResponseOk(true);
-        const data = await response.json();
-
-        console.log(data);
-
-        setPrompt(inputValue);
-        setResult(data.choices[0].message.content);
-        setJresult(JSON.stringify(data, null, 2));
-        setInputValue("");
-        setError("");
-      } else {
-        setResponseOk(false);
-        throw new Error("An error occured");
+        // Update jresult with the updates messages array
+        setJresult(JSON.stringify(updatedMessages2, null, 2));
+      } catch (error) {
+        console.log("An error occured", error);
+        setError("An error occured");
       }
-    } catch (error) {
-      console.log(error);
-      setResult("");
-      setError("An error occured while submitting the form.");
     }
   };
 
@@ -81,8 +80,8 @@ function Chatbot() {
                   className="form-control custom-input"
                   id="floatingInput"
                   placeholder="Enter a prompt"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
                 />
                 <label htmlFor="floatingInput">Input</label>
               </div>
