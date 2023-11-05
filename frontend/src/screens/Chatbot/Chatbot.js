@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./style/style.css";
 import axios from "axios";
 
@@ -43,6 +43,9 @@ function Chatbot() {
         setMessages(updatedMessages2);
         console.log(updatedMessages2);
 
+        // clear input
+        setInputMessage("");
+
         // Update jresult with the updates messages array
         setJresult(JSON.stringify(updatedMessages2, null, 2));
       } catch (error) {
@@ -51,6 +54,16 @@ function Chatbot() {
       }
     }
   };
+
+  // scroll to the bottom of the chatContainer whenever the messages array changes
+  useEffect(() => {
+    const chatContainer = document.getElementById("chatContainer");
+    const scrollOptions = {
+      top: chatContainer.scrollHeight,
+      behavior: "smooth",
+    };
+    chatContainer.scrollTo(scrollOptions);
+  }, [messages]);
 
   return (
     <div>
@@ -65,18 +78,34 @@ function Chatbot() {
         </div>
 
         <div id="chatContainer" className="flex-fill overflow-auto">
-          <div>message1</div>
-          <div>message2</div>
+          {messages.map(
+            (message, index) =>
+              message.role !== "system" && (
+                <div
+                  key={index}
+                  className={`${
+                    message.role === "user"
+                      ? "alert alert-info"
+                      : "alert alert-success"
+                  }`}
+                >
+                  {message.content}
+                </div>
+              )
+          )}
           {error && <div className="alert alert-danger mt-3">{error}</div>}
           {prompt && <div className="alert alert-secondary mt-3">{prompt}</div>}
           {result && <div className="alert alert-success mt-3">{result}</div>}
         </div>
 
-        <form className="form-horizontal" onSubmit={handleSubmit}>
+        <form
+          className="form-horizontal mb-3 container-fluid"
+          onSubmit={handleSubmit}
+        >
           <div className="row form-group mt-2">
-            <div className="col-sm-10">
+            <div className="col-sm-11">
               <div className="form-floating">
-                <textarea
+                <input
                   className="form-control custom-input"
                   id="floatingInput"
                   placeholder="Enter a prompt"
@@ -86,7 +115,7 @@ function Chatbot() {
                 <label htmlFor="floatingInput">Input</label>
               </div>
             </div>
-            <div className="col-sm-2">
+            <div className="col-sm-1">
               <button type="submit" className="btn btn-primary custom-button">
                 Submit
               </button>
