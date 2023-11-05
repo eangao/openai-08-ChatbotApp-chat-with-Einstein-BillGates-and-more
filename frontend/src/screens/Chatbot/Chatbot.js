@@ -55,6 +55,13 @@ function Chatbot() {
     }
   };
 
+  const handleOptionSelect = (option) => {
+    setMessages([
+      { role: "system", content: `I want you to act as ${option}` },
+    ]);
+    setSelectedOption(option);
+  };
+
   // scroll to the bottom of the chatContainer whenever the messages array changes
   useEffect(() => {
     const chatContainer = document.getElementById("chatContainer");
@@ -65,6 +72,49 @@ function Chatbot() {
     chatContainer.scrollTo(scrollOptions);
   }, [messages]);
 
+  const personalities = [
+    {
+      title: "Einstein",
+      description: "German physicist",
+    },
+    {
+      title: "Christopher Columbus",
+      description: "Italian explorer",
+    },
+    {
+      title: "Steve Jobs",
+      description: "Entrepreneur who led digital revolution",
+    },
+    {
+      title: "Thomas Edison",
+      description: "Inventor and businessman",
+    },
+    {
+      title: "Bill Gates",
+      description: "Founder of Microsoft",
+    },
+    {
+      title: "Louis Pasteur",
+      description: "French chemist and Biologist",
+    },
+    {
+      title: "Muhammed Ali",
+      description: "American boxer and human rights activist",
+    },
+    {
+      title: "Tim Berners Lee",
+      description: "Inventor of World Wide Web",
+    },
+    {
+      title: "Michael Faraday",
+      description: "English scientist",
+    },
+    {
+      title: "Mean assistant",
+      description: "You'd better not chat with me",
+    },
+  ];
+
   return (
     <div>
       <div className="d-flex flex-column chat-page">
@@ -74,7 +124,23 @@ function Chatbot() {
               ? "You are chatting with:"
               : "Please select a character:"}
           </h3>
-          <div>{/* options */}</div>
+          <div className="d-flex justify-content-center">
+            {personalities.map((personality, index) => (
+              <div key={index} className="text-center">
+                <img
+                  src={`images/personalities/${index + 1}.png`}
+                  alt={personality.title}
+                  className={`img-fluid rounded-circle ${
+                    selectedOption === personality.title ? "selected" : ""
+                  }`}
+                  onClick={() => handleOptionSelect(personality.title)}
+                />
+
+                <h6>{personality.title}</h6>
+                <p>{personality.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div id="chatContainer" className="flex-fill overflow-auto">
